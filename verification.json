@@ -1,0 +1,10 @@
+{
+  "repository": "https://github.com/CassiusR007/cross-chain-message-acceptance-dataset",
+  "verified_commit": "a823cd35a296042cf44d3acac7ec8c143d5e34aa",
+  "publication_format": "complete ZIP archive with root documentation",
+  "anonymous_download": true,
+  "archive_files": 324,
+  "manifest_content_files": 323,
+  "archive_sha256": "d2c7b33d635a2aff73115e07f732196056416d62f558ea6d3b34a081811c2fb3",
+  "all_files_match_local": true
+}

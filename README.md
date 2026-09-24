@@ -2,58 +2,43 @@
 
 [English](README.en.md) · v0.2.0 · 检索截止：2026-09-22 · MIT
 
-围绕跨链消息生命周期与验证语义，整理公开安全报告中的异常接受事件。关注的问题是：目标端接受、执行或记账的请求，是否具备协议预期的源端事实、认证、资产语义和执行权限？范围包括链下错误观察、签名信任失守、证明验证缺陷、消息重放及应用接收器越权。
+基于公开安全报告，按照跨链消息生命周期与验证语义整理异常消息接受事件。包含源端观察异常、签名信任失守、证明验证缺陷、重放及执行权限异常。
 
-**本版是事件证据集，不是已完成取证的消息级机器学习基准。** 部分攻击存在真实源消息或合法签名，仅做源交易配对不足以识别。
+## 下载完整数据集
 
-## 本版实际规模
+**[下载 MAAD v0.2.0 完整数据包](MAAD-v0.2.0.zip?raw=true)**
 
-<!-- MAAD:STATS:BEGIN -->
-核心异常接受事件：**31**（恶意事件 31；白帽事件 0）。
+本次以完整 ZIP 包发布。请下载并解压后使用；事件表、来源表、原始保留数据、验证脚本及详细文档均在包内。包内 README 的相对链接对应解压后的目录。
 
-目录 206 条记录；其中 41 条有报告支持，33 条为未解析组。
+[数据卡](DATA_CARD.md) · [来源与许可说明](NOTICE.md) · [更新记录](CHANGELOG.md) · [发布校验记录](verification.json)
 
-证据包含 44 个来源、84 条主张、15 个唯一报告交易入口、46 条检索记录。
+## 数据规模与证据边界
 
-来源访问状态：{"partial_text_read": 42, "search_snippet_only": 1, "unavailable": 1}。
+- 31 个核心异常接受事件，均为报告支持的恶意事件。
+- 206 条目录记录，其中 41 条有报告支持、33 条为未解析组；目录记录不等于独立攻击数量。
+- 44 个来源登记、84 条主张、15 个报告提供的完整交易入口、46 条检索记录。
+- 保留消息层包含 61 笔链上交易观察、24 个消息候选、22 个接受观察；语义验证消息与严格基准样本均为 0。
 
-保留的 v0.1.0 消息层：61 笔交易观察、24 个消息候选、22 个接受观察、0 个语义验证消息、0 个严格基准样本。
-<!-- MAAD:STATS:END -->
+**这是事件证据集，不是已经完成链上取证的消息级机器学习基准。** 未核实线索、未解析组和范围外案例不能直接用作正常负样本。报告中的交易入口也不等于本版重新核验的链上证据。2025 年未纳入核心事件不代表该年没有攻击。来源独立性未建立时保留未知。
 
-精确统计由脚本生成，见 [statistics.json](event-evidence/statistics.json)。多标签类别计数不能相加作为事件总数。33 条未解析组不算独立事件。核心集当前白帽计数为 0；Ronin 2024 的技术机制已支持，但本版未仅凭资金返还推断白帽动机。
+## 解压后使用
 
-## 获取和使用
+核心数据位于 `event-evidence/data/`，包含 `events.csv`、`sources.csv`、`claims.csv`、`transaction_links.csv`、映射表和检索日志，并提供对应 JSONL。
 
-- [事件 CSV](event-evidence/data/events.csv) / [JSONL](event-evidence/data/events.jsonl)：标注、范围、原因、局限及来源 ID。
-- [来源表](event-evidence/data/sources.csv) 与 [主张表](event-evidence/data/claims.csv)：报告 URL、访问状态、章节定位和逐条支持关系。
-- [交易入口](event-evidence/data/transaction_links.csv)：链、完整哈希、报告描述角色和验证等级。
-- [上游映射](event-evidence/data/upstream_map.csv)、[27 条既有线索映射](event-evidence/data/case_map.csv)、[检索日志](event-evidence/data/search_log.csv)。
-- [数据卡](DATA_CARD.md)、[字段字典](event-evidence/DATA_DICTIONARY.md)、[质量缺口](event-evidence/quality_issues.json)。
+`event-evidence/statistics.json` 中的 `core_event_ids` 给出核心集合。字段与质量局限见 `event-evidence/DATA_DICTIONARY.md`、`event-evidence/quality_issues.json`。采集来源、主张定位与访问状态可逐项追溯。
 
-核心筛选条件为 `record_type=event`、`scope=in_scope`、`review_status=report_supported`、`case_nature` 为 `malicious_attack` 或 `whitehat`，且不存在阻止纳入的冲突。验证器额外要求至少一条已读取正文的 `acceptance_mechanism` 支持主张。推荐直接使用统计文件中的 `core_event_ids`，不要只筛 `scope`。
+在解压后的根目录运行：
 
-若建立消息级检测器，应继续采集 source/destination receipts、logs、traces、消息标识及历史配置。未找到源消息可能来自检索不全，不能自动标为异常。按事件或同源攻击 campaign 划分训练/测试集；不要把同一次事件的交易随机拆分，也不要把范围外或未核实候选当成正常负样本。
-
-## 离线复现
-
-Python 3.10+，无需第三方依赖。在仓库根目录执行：
-
-```sh
-python -B event-evidence/build.py
-python -B -m unittest discover -s event-evidence -p 'test_*.py'
-python -B event-evidence/validate.py
-python -B -m unittest discover -s message-acceptance -p 'test_*.py'
-python -B message-acceptance/validate.py
-python -B -m unittest discover -s release -p 'test_*.py'
-python -B release/package.py
+```console
+python event-evidence/validate.py
+python message-acceptance/validate.py
+python -m unittest discover -s event-evidence -p "test_*.py"
 ```
 
-人工标注输入只在 `event-evidence/curation/*.jsonl`；`data/`、统计及缺口由脚本确定性生成。冻结的旧数据与消息层按 SHA-256 核对。`message-acceptance/manifest.json` 描述保留的 **v0.1.0** 层，不能与 v0.2.0 事件统计混用。
+建立检测器时，应以消息实例作为检测样本，并继续恢复源/目标链日志、证明与历史配置；按事件或同源攻击活动划分训练和测试集，避免同一攻击泄漏到两侧。
 
-## 证据边界与来源
+## 可复现性与许可
 
-采用项目方复盘及 CertiK、SlowMist、BlockSec、Halborn、Verichains、Immunefi、Dedaub、SolidityScan 等机构公开分析。每个来源按实际阅读状态登记；来源独立性未能确认时明确记为 unknown。多数事件只有一个可确认的证据根源，**没有经过双人独立事实标注或全量链上重放**。检索是人工定向、非穷尽的，年份分布不能代表全行业发生率。
+数据包包含 324 个文件，其中 323 个内容文件列于 `release/manifest.json`，另一个文件是清单本身。已通过匿名下载逐项比对本地发布文件，结果见 [verification.json](verification.json)。检索不声称全球穷尽覆盖，来源正文不完整时已明确记录。
 
-继承记录的名称、日期和链可能仍含上游未经证实的描述；`inherited_candidate` 只表示描述层初筛。必须结合 `review_status`、`date_basis`、主张及局限使用。事件性质是事件级概括，不适用于事件内每个参与者或交易。对恢复资金不自动推断攻击者善意，不把有效签名等同于真实源状态。
-
-上游：[Justin Zhou / Cross-chain-anomaly-event-dataset](https://github.com/justinzjj/Cross-chain-anomaly-event-dataset)，冻结版本 `bdb0893c51cca7ce2dee52f8228b90bab4d0f290`。保留上游许可与署名，见 [NOTICE](NOTICE.md)。外部报告只提供链接与简短事实转述，其版权未被本仓库重新许可。引用信息见 [CITATION.cff](CITATION.cff)。
+保留上游 281 个文件及原有 MIT 许可与署名；本版新增标注、方法和代码详见包内文档。引用元数据见 [CITATION.cff](CITATION.cff)。公开报告的版权仍归原作者。
