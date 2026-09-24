@@ -1,0 +1,10 @@
+cff-version: 1.2.0
+message: "Please cite this release and the upstream dataset when using this work."
+title: "Cross-chain Message Acceptance Dataset (MAAD)"
+version: 0.2.0
+date-released: 2026-09-22
+type: dataset
+authors:
+  - name: CassiusR007
+repository-code: "https://github.com/CassiusR007/cross-chain-message-acceptance-dataset"
+license: MIT
